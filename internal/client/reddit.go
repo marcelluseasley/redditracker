@@ -58,7 +58,7 @@ func (c *RedditClient) GetSubredditUsers(conf *config.Config) ([]PostData, []Use
 	userDataChannel := make(chan PostData)
 	postDataChannel := make(chan PostData)
 
-	// TODO: refactor to make these 3 functions as one function and just pass in parameters to differentiate top/new/hot
+
 	wg.Add(3)
 	go func() {
 		defer wg.Done()
