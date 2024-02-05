@@ -49,8 +49,10 @@ func (s *Server) homeHandler(c *gin.Context) {
 
 	data := struct {
 		Title string
+		Port int
 	}{
 		Title: fmt.Sprintf("%s - Subreddit Tracker", s.redditClient.Config.SubReddit),
+		Port: s.redditClient.Config.Port,
 	}
 	err := tmpl.ExecuteTemplate(c.Writer, "main-template.html", data)
 	if err != nil {

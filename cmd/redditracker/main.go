@@ -51,5 +51,6 @@ func updateConfigWithToken(conf *config.Config, token *client.RedditToken) {
 
 func startServer(port *int, conf *config.Config) {
 	server := api.NewServer(*port, conf)
+	log.Println("Starting server on port", *port)
 	log.Fatal(server.Start())
 }

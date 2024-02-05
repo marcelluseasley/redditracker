@@ -5,7 +5,7 @@ build:
 	go build -o cmd/redditracker/redditracker cmd/redditracker/main.go
 
 run: build
-	cd cmd/redditracker && ./redditracker -port=$(PORT) -subreddit=$(SUBREDDIT)
+	cd cmd/redditracker && GIN_MODE=release ./redditracker -port=$(PORT) -subreddit=$(SUBREDDIT)
 
 clean:
 	rm cmd/redditracker/redditracker
