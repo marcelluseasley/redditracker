@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"strings"
 
 	"github.com/marcelluseasley/redditracker/api"
 	"github.com/marcelluseasley/redditracker/config"
@@ -29,10 +30,17 @@ func parseFlagsAndLoadConfig() *config.Config {
 		log.Fatal(err)
 	}
 
-	conf.SubReddit = *subReddit
+	conf.SubReddit = sanitizeSubreddit(*subReddit)
 	conf.Port = *port
 
 	return conf
+}
+
+func sanitizeSubreddit(subreddit string) string {
+    if strings.HasPrefix(subreddit, "r/") {
+        return strings.TrimPrefix(subreddit, "r/")
+    }
+    return subreddit
 }
 
 func getToken(conf *config.Config) *client.RedditToken {
