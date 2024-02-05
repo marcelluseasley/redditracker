@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{{ .Title }}</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+</head>
+
+<body>
+
+    <div class="container-fluid">
+        <div class="row">
+
+            <div class="col">
+
+                <table class="table table-striped table-bordered">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Title</th>
+                            <th>Up Votes</th>
+
+                        </tr>
+                    </thead>
+                    {{ template "row-posts-template.html" . }}
+                </table>
+
+            </div>
+
+
+            <div class="col">
+
+                <table class="table table-striped table-bordered">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>User</th>
+                            <th>Posts</th>
+
+                        </tr>
+                    </thead>
+                    {{ template "row-users-template.html" . }}
+                </table>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var conn = new WebSocket("ws://localhost:8080/ws");
+        conn.onmessage = function (e) {
+            console.log(e)
+            var msg = JSON.parse(e.data);
+            if (msg.type === "post") {
+                var container = document.getElementById("reddit-posts");
+                container.innerHTML = msg.data;
+            } else if (msg.type === "user") {
+                var container = document.getElementById("reddit-users");
+                container.innerHTML = msg.data;
+            }
+        };
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+
+</html>
