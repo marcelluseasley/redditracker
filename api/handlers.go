@@ -31,26 +31,6 @@ type WebSocketMessage struct {
 	Data string `json:"data"`
 }
 
-type PostData struct {
-	Subreddit string `json:"subreddit"`
-	Posts     []Post `json:"posts"`
-}
-
-type Post struct {
-	Title   string `json:"title"`
-	Upvotes int    `json:"upvotes"`
-}
-
-type UserData struct {
-	Subreddit string `json:"subreddit"`
-	Users     []User `json:"users"`
-}
-
-type User struct {
-	Author string `json:"title"`
-	Posts  int    `json:"upvotes"`
-}
-
 func init() {
 	var err error
 	tmpl, err = template.ParseGlob("../../web/templates/*.html")
@@ -89,16 +69,6 @@ func (s *Server) wsHandler(c *gin.Context) {
 		return
 	}
 
-	postData := PostData{
-		Subreddit: s.redditClient.Config.SubReddit,
-		Posts:     []Post{},
-	}
-
-	userData := UserData{
-		Subreddit: s.redditClient.Config.SubReddit,
-		Users:     []User{},
-	}
-
 	postRows := []string{}
 	usersRows := []string{}
 	rowEntry := `<tr>
@@ -116,7 +86,7 @@ func (s *Server) wsHandler(c *gin.Context) {
 			case postCase := <-s.postDataChannel:
 				for _, post := range postCase {
 					postRows = append(postRows, fmt.Sprintf(rowEntry, post.Title, post.Ups))
-					postData.Posts = append(postData.Posts, Post{Title: post.Title, Upvotes: post.Ups})
+
 					i++
 
 					if i == maxRows {
@@ -132,20 +102,19 @@ func (s *Server) wsHandler(c *gin.Context) {
 							break
 						}
 
-						s.resultsCache.Set(postData.Subreddit+"#posts", postData, 0)
 						if err := ws.WriteMessage(websocket.TextMessage, msgJson); err != nil {
 							log.Println(err)
 							break
 						}
 						i = 0
 						postRows = []string{}
-						postData.Posts = []Post{}
+
 					}
 				}
 			case userCase := <-s.userCountChannel:
 				for _, user := range userCase {
 					usersRows = append(usersRows, fmt.Sprintf(rowEntry, user.Username, user.PostCount))
-					userData.Users = append(userData.Users, User{Author: user.Username, Posts: user.PostCount})
+
 					j++
 
 					if j == maxRows {
@@ -161,14 +130,13 @@ func (s *Server) wsHandler(c *gin.Context) {
 							break
 						}
 
-						s.resultsCache.Set(userData.Subreddit+"#users", userData, 0)
 						if err := ws.WriteMessage(websocket.TextMessage, msgJson); err != nil {
 							log.Println(err)
 							break
 						}
 						j = 0
 						usersRows = []string{}
-						userData.Users = []User{}
+
 					}
 
 				}
@@ -180,29 +148,45 @@ func (s *Server) wsHandler(c *gin.Context) {
 
 func (s *Server) resultsHandler(c *gin.Context) {
 
-	posts, postsFound := s.resultsCache.Get(s.redditClient.Config.SubReddit + "#posts")
-	users, usersFound := s.resultsCache.Get(s.redditClient.Config.SubReddit + "#users")
+	q := c.Query("q")
 
-	if !postsFound && !usersFound {
-        c.JSON(http.StatusNotFound, gin.H{
-            "error": "No posts or users found",
-        })
-        return
-    }
+	switch q {
+	case "all":
+		posts, postsFound := s.resultsCache.Get(s.redditClient.Config.SubReddit + "#posts")
+		users, usersFound := s.resultsCache.Get(s.redditClient.Config.SubReddit + "#users")
 
-	response := gin.H{}
+		response := gin.H{}
 
-    if postsFound {
-        response["posts"] = posts
-    } else {
-        response["posts"] = "No posts found"
-    }
+		if postsFound {
+			response["posts"] = posts
+		} else {
+			response["posts"] = "No posts found"
+		}
 
-    if usersFound {
-        response["users"] = users
-    } else {
-        response["users"] = "No users found"
-    }
+		if usersFound {
+			response["users"] = users
+		} else {
+			response["users"] = "No users found"
+		}
 
-    c.JSON(http.StatusOK, response)
+		c.JSON(http.StatusOK, response)
+	case "posts":
+		posts, found := s.resultsCache.Get(s.redditClient.Config.SubReddit + "#posts")
+
+		if found {
+			c.JSON(http.StatusOK, gin.H{"posts": posts})
+		} else {
+			c.JSON(http.StatusNotFound, gin.H{"error": "No posts found"})
+		}
+	case "users":
+		users, found := s.resultsCache.Get(s.redditClient.Config.SubReddit + "#users")
+
+		if found {
+			c.JSON(http.StatusOK, gin.H{"users": users})
+		} else {
+			c.JSON(http.StatusNotFound, gin.H{"error": "No users found"})
+		}
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid query parameter"})
+	}
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/patrickmn/go-cache"
 )
 
+
 type Server struct {
 	server       *http.Server
 	redditClient *client.RedditClient
@@ -37,8 +38,8 @@ func NewServer(port int, conf *config.Config) *Server {
 		server:           hs,
 		redditClient:     redditClient,
 		resultsCache:     cache.New(10*time.Second, 1*time.Minute),
-		postDataChannel:  make(chan []client.PostData),
-		userCountChannel: make(chan []client.UserPostCount),
+		postDataChannel:  make(chan []client.PostData, 200),
+		userCountChannel: make(chan []client.UserPostCount, 200),
 	}
 
 	r.GET("/health", server.health)
@@ -54,14 +55,15 @@ func (s *Server) Start() error {
 		for {
 			allPosts, sortedUsers := s.redditClient.GetSubredditUsers(s.redditClient.Config)
 
-			if len(allPosts) > 100 {
+			if len(allPosts) >= 100 {
+				s.resultsCache.Set(s.redditClient.Config.SubReddit+ "#posts", allPosts[:100], cache.NoExpiration)
 				s.postDataChannel <- allPosts[:100]
 			}
 
-			if len(sortedUsers) > 100 {
+			if len(sortedUsers) >= 100 {
+				s.resultsCache.Set(s.redditClient.Config.SubReddit+ "#users", sortedUsers[:100], cache.NoExpiration)
 				s.userCountChannel <- sortedUsers[:100]
 			}
-
 		}
 	}()
 
