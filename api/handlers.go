@@ -31,6 +31,26 @@ type WebSocketMessage struct {
 	Data string `json:"data"`
 }
 
+type PostData struct {
+	Subreddit string `json:"subreddit"`
+	Posts     []Post `json:"posts"`
+}
+
+type Post struct {
+	Title   string `json:"title"`
+	Upvotes int    `json:"upvotes"`
+}
+
+type UserData struct {
+	Subreddit string `json:"subreddit"`
+	Users     []User `json:"users"`
+}
+
+type User struct {
+	Author string `json:"title"`
+	Posts  int    `json:"upvotes"`
+}
+
 func init() {
 	var err error
 	tmpl, err = template.ParseGlob("../../web/templates/*.html")
@@ -49,10 +69,10 @@ func (s *Server) homeHandler(c *gin.Context) {
 
 	data := struct {
 		Title string
-		Port int
+		Port  int
 	}{
 		Title: fmt.Sprintf("%s - Subreddit Tracker", s.redditClient.Config.SubReddit),
-		Port: s.redditClient.Config.Port,
+		Port:  s.redditClient.Config.Port,
 	}
 	err := tmpl.ExecuteTemplate(c.Writer, "main-template.html", data)
 	if err != nil {
@@ -68,6 +88,17 @@ func (s *Server) wsHandler(c *gin.Context) {
 		log.Println(err)
 		return
 	}
+
+	postData := PostData{
+		Subreddit: s.redditClient.Config.SubReddit,
+		Posts:     []Post{},
+	}
+
+	userData := UserData{
+		Subreddit: s.redditClient.Config.SubReddit,
+		Users:     []User{},
+	}
+
 	postRows := []string{}
 	usersRows := []string{}
 	rowEntry := `<tr>
@@ -85,6 +116,7 @@ func (s *Server) wsHandler(c *gin.Context) {
 			case postCase := <-s.postDataChannel:
 				for _, post := range postCase {
 					postRows = append(postRows, fmt.Sprintf(rowEntry, post.Title, post.Ups))
+					postData.Posts = append(postData.Posts, Post{Title: post.Title, Upvotes: post.Ups})
 					i++
 
 					if i == maxRows {
@@ -100,17 +132,20 @@ func (s *Server) wsHandler(c *gin.Context) {
 							break
 						}
 
+						s.resultsCache.Set(postData.Subreddit+"#posts", postData, 0)
 						if err := ws.WriteMessage(websocket.TextMessage, msgJson); err != nil {
 							log.Println(err)
 							break
 						}
 						i = 0
 						postRows = []string{}
+						postData.Posts = []Post{}
 					}
 				}
 			case userCase := <-s.userCountChannel:
 				for _, user := range userCase {
 					usersRows = append(usersRows, fmt.Sprintf(rowEntry, user.Username, user.PostCount))
+					userData.Users = append(userData.Users, User{Author: user.Username, Posts: user.PostCount})
 					j++
 
 					if j == maxRows {
@@ -126,12 +161,14 @@ func (s *Server) wsHandler(c *gin.Context) {
 							break
 						}
 
+						s.resultsCache.Set(userData.Subreddit+"#users", userData, 0)
 						if err := ws.WriteMessage(websocket.TextMessage, msgJson); err != nil {
 							log.Println(err)
 							break
 						}
 						j = 0
 						usersRows = []string{}
+						userData.Users = []User{}
 					}
 
 				}
@@ -139,4 +176,33 @@ func (s *Server) wsHandler(c *gin.Context) {
 		}
 
 	}()
+}
+
+func (s *Server) resultsHandler(c *gin.Context) {
+
+	posts, postsFound := s.resultsCache.Get(s.redditClient.Config.SubReddit + "#posts")
+	users, usersFound := s.resultsCache.Get(s.redditClient.Config.SubReddit + "#users")
+
+	if !postsFound && !usersFound {
+        c.JSON(http.StatusNotFound, gin.H{
+            "error": "No posts or users found",
+        })
+        return
+    }
+
+	response := gin.H{}
+
+    if postsFound {
+        response["posts"] = posts
+    } else {
+        response["posts"] = "No posts found"
+    }
+
+    if usersFound {
+        response["users"] = users
+    } else {
+        response["users"] = "No users found"
+    }
+
+    c.JSON(http.StatusOK, response)
 }

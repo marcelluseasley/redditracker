@@ -46,7 +46,10 @@ Once the application is running, it will begin monitoring the specified subreddi
 ```bash
     http://localhost:[PORT]/
 ```
-
+You can also make a curl request to get a JSON response of results:
+```bash
+   curl --location 'http://localhost:[PORT]/data'
+```
 
 
 ## License

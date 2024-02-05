@@ -8,11 +8,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/marcelluseasley/redditracker/config"
 	"github.com/marcelluseasley/redditracker/internal/client"
+	"github.com/patrickmn/go-cache"
 )
 
 type Server struct {
 	server       *http.Server
 	redditClient *client.RedditClient
+	resultsCache *cache.Cache
 
 	postDataChannel  chan []client.PostData
 	userCountChannel chan []client.UserPostCount
@@ -34,6 +36,7 @@ func NewServer(port int, conf *config.Config) *Server {
 	server := &Server{
 		server:           hs,
 		redditClient:     redditClient,
+		resultsCache:     cache.New(10*time.Second, 1*time.Minute),
 		postDataChannel:  make(chan []client.PostData),
 		userCountChannel: make(chan []client.UserPostCount),
 	}
@@ -41,6 +44,7 @@ func NewServer(port int, conf *config.Config) *Server {
 	r.GET("/health", server.health)
 	r.GET("/", server.homeHandler)
 	r.GET("/ws", server.wsHandler)
+	r.GET("/data", server.resultsHandler)
 
 	return server
 }
