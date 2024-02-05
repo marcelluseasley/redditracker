@@ -46,9 +46,10 @@ Once the application is running, it will begin monitoring the specified subreddi
 ```bash
     http://localhost:[PORT]/
 ```
-You can also make a curl request to get a JSON response of results:
+
+You can also make a curl request to get a JSON response of results. The query parameter `q` is required and takes one of: `all`, `posts`, or `users`:
 ```bash
-   curl --location 'http://localhost:[PORT]/data'
+   curl --location 'http://localhost:[PORT]/data?q=[all,posts,users]'
 ```
 
 
