@@ -56,6 +56,7 @@ func (t *JWTTransport) RoundTrip(r *http.Request) (*http.Response, error) {
 		}
 
 		t.AccessToken = newToken.AccessToken
+		t.Expiry = ExpiresInToExpiry(newToken.ExpiresIn)
 	}
 
 	clonedRequest := cloneRequest(r)
