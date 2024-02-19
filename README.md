@@ -1,3 +1,4 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/marcelluseasley/redditracker)](https://goreportcard.com/report/github.com/marcelluseasley/redditracker)
 
 # Redditracker :Real-Time Top Post Up Votes & Top Posting Users (Coding Challenge)
 
