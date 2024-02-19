@@ -58,7 +58,6 @@ func (c *RedditClient) GetSubredditUsers(conf *config.Config) ([]PostData, []Use
 	userDataChannel := make(chan PostData)
 	postDataChannel := make(chan PostData)
 
-
 	wg.Add(3)
 	go func() {
 		defer wg.Done()
