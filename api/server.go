@@ -11,7 +11,6 @@ import (
 	"github.com/patrickmn/go-cache"
 )
 
-
 type Server struct {
 	server       *http.Server
 	redditClient *client.RedditClient
@@ -56,12 +55,12 @@ func (s *Server) Start() error {
 			allPosts, sortedUsers := s.redditClient.GetSubredditUsers(s.redditClient.Config)
 
 			if len(allPosts) >= 100 {
-				s.resultsCache.Set(s.redditClient.Config.SubReddit+ "#posts", allPosts[:100], cache.NoExpiration)
+				s.resultsCache.Set(s.redditClient.Config.SubReddit+"#posts", allPosts[:100], cache.NoExpiration)
 				s.postDataChannel <- allPosts[:100]
 			}
 
 			if len(sortedUsers) >= 100 {
-				s.resultsCache.Set(s.redditClient.Config.SubReddit+ "#users", sortedUsers[:100], cache.NoExpiration)
+				s.resultsCache.Set(s.redditClient.Config.SubReddit+"#users", sortedUsers[:100], cache.NoExpiration)
 				s.userCountChannel <- sortedUsers[:100]
 			}
 		}

@@ -37,10 +37,10 @@ func parseFlagsAndLoadConfig() *config.Config {
 }
 
 func sanitizeSubreddit(subreddit string) string {
-    if strings.HasPrefix(subreddit, "r/") {
-        return strings.TrimPrefix(subreddit, "r/")
-    }
-    return subreddit
+	if strings.HasPrefix(subreddit, "r/") {
+		return strings.TrimPrefix(subreddit, "r/")
+	}
+	return subreddit
 }
 
 func getToken(conf *config.Config) *client.RedditToken {
