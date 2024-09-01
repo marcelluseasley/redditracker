@@ -11,12 +11,10 @@ import (
 )
 
 func main() {
-
 	conf := parseFlagsAndLoadConfig()
 	token := getToken(conf)
 	updateConfigWithToken(conf, token)
 	startServer(&conf.Port, conf)
-
 }
 
 func parseFlagsAndLoadConfig() *config.Config {
