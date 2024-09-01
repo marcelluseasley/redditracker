@@ -18,9 +18,7 @@ const (
 	NumOfHTTPCalls = 3
 )
 
-var (
-	wg sync.WaitGroup
-)
+var wg sync.WaitGroup
 
 type UserPostCount struct {
 	Username  string
@@ -127,7 +125,7 @@ func getSubredditUsersHot(c *RedditClient, conf *config.Config, usersChan chan P
 }
 
 func getSubredditData(c *RedditClient, conf *config.Config, path string, usersChan, postsChan chan PostData) {
-	//for paging
+	// for paging
 	after := ""
 	for {
 		req, err := http.NewRequest("GET", fmt.Sprintf("%s/r/%s/%s?limit=100&t=all&after=%s", baseURL, conf.SubReddit, path, after), nil)
@@ -169,7 +167,7 @@ func getSubredditData(c *RedditClient, conf *config.Config, path string, usersCh
 
 		}
 
-		//after = posts.Data.After
+		// after = posts.Data.After
 
 		if after == "" {
 			break
@@ -178,6 +176,7 @@ func getSubredditData(c *RedditClient, conf *config.Config, path string, usersCh
 
 	}
 }
+
 func sortUserByNumPosts(userMap map[string][]string) []UserPostCount {
 	var userPostCount []UserPostCount
 	for key, value := range userMap {

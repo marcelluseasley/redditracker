@@ -39,5 +39,4 @@ func LoadConfig() (*Config, error) {
 		RedditClientSecret: redditClientSecret,
 		UserAgent:          userAgent,
 	}, nil
-
 }

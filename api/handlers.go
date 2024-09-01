@@ -46,7 +46,6 @@ func (s *Server) health(c *gin.Context) {
 }
 
 func (s *Server) homeHandler(c *gin.Context) {
-
 	data := struct {
 		Title string
 		Port  int
@@ -62,7 +61,6 @@ func (s *Server) homeHandler(c *gin.Context) {
 }
 
 func (s *Server) wsHandler(c *gin.Context) {
-
 	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Println(err)
@@ -81,7 +79,6 @@ func (s *Server) wsHandler(c *gin.Context) {
 		j := 0
 
 		for {
-
 			select {
 			case postCase := <-s.postDataChannel:
 				for _, post := range postCase {
@@ -142,12 +139,10 @@ func (s *Server) wsHandler(c *gin.Context) {
 				}
 			}
 		}
-
 	}()
 }
 
 func (s *Server) resultsHandler(c *gin.Context) {
-
 	q := c.Query("q")
 
 	switch q {

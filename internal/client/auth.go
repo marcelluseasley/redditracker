@@ -43,7 +43,6 @@ func NewJWTTransport(accessToken string, expiry time.Time, config *config.Config
 }
 
 func (t *JWTTransport) RoundTrip(r *http.Request) (*http.Response, error) {
-
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
