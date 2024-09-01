@@ -21,7 +21,6 @@ type Server struct {
 }
 
 func NewServer(port int, conf *config.Config) *Server {
-
 	r := gin.Default()
 
 	hs := &http.Server{
@@ -55,14 +54,16 @@ func (s *Server) Start() error {
 			allPosts, sortedUsers := s.redditClient.GetSubredditUsers(s.redditClient.Config)
 
 			if len(allPosts) >= 100 {
-				s.resultsCache.Set(s.redditClient.Config.SubReddit+"#posts", allPosts[:100], cache.NoExpiration)
-				s.postDataChannel <- allPosts[:100]
+				allPosts = allPosts[:100]
 			}
+			s.resultsCache.Set(s.redditClient.Config.SubReddit+"#posts", allPosts[:100], cache.NoExpiration)
+			s.postDataChannel <- allPosts[:100]
 
 			if len(sortedUsers) >= 100 {
-				s.resultsCache.Set(s.redditClient.Config.SubReddit+"#users", sortedUsers[:100], cache.NoExpiration)
-				s.userCountChannel <- sortedUsers[:100]
+				sortedUsers = sortedUsers[:100]
 			}
+			s.resultsCache.Set(s.redditClient.Config.SubReddit+"#users", sortedUsers[:100], cache.NoExpiration)
+			s.userCountChannel <- sortedUsers[:100]
 		}
 	}()
 
