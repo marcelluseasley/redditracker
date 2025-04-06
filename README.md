@@ -59,4 +59,3 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Acknowledgments
 - [Reddit API](https://www.reddit.com/dev/api) for providing the data used by this application.
-``````
